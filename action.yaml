@@ -1,18 +1,21 @@
 name: 'Go lang pipeline'
 description: 'Go Lang Docker Build, AWS ECR Push and Kustomize step'
 inputs:
+  application-name:
+    description: 'The application name'
+    required: true
+  aws-region:
+    description: 'AWS region name to assume role'
+    required: true
   go-version:
     description: 'Go lang version'
     required: true
     default: 1.16
-  application-name:
-    description: 'The application name'
+  role-session-name:
+    description: 'The AWS Session name'
     required: true
   role-to-assume:
     description: 'The AWS OICD role to assume'
-    required: true
-  role-session-name:
-    description: 'The AWS Session name'
     required: true
 
 runs:
