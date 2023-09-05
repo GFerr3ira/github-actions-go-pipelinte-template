@@ -1,26 +1,46 @@
-name: 'Hello World'
-description: 'Greet someone'
+name: 'Go lang pipeline'
+description: 'Go Lang Docker Build, AWS ECR Push and Kustomize step'
 inputs:
-  who-to-greet:  # id of input
-    description: 'Who to greet'
+  go-version:
+    description: 'Go lang version'
     required: true
-    default: 'World'
-outputs:
-  random-number:
-    description: "Random number"
-    value: ${{ steps.random-number-generator.outputs.random-number }}
+    default: 1.16
+  application-name:
+    description: 'The application name'
+    required: true
+  role-to-assume:
+    description: 'The AWS OICD role to assume'
+    required: true
+  role-session-name:
+    description: 'The AWS Session name'
+    required: true
+
 runs:
   using: "composite"
   steps:
-    - uses: gr2m/hello-world-js-action@v1.x
+    - name: Set up Go
+      uses: actions/setup-go@v2
       with:
-        greeting: Loro
-    - run: echo Hello ${{ inputs.who-to-greet }}.
-      shell: bash
-    - id: random-number-generator
-      run: echo "random-number=$(echo $RANDOM)" >> $GITHUB_OUTPUT
-      shell: bash
-    - run: echo "${{ github.action_path }}" >> $GITHUB_PATH
-      shell: bash
-    - run: goodbye.sh
-      shell: bash
+        go-version: ${{ inputs.go-version }}
+
+    - name: Configure AWS credentials from AWS account
+      uses: aws-actions/configure-aws-credentials@v3
+      with:
+        role-to-assume: ${{ inputs.role-to-assume }}
+        aws-region: ${{ inputs.aws-region }}
+        role-session-name: ${{ inputs.role-session-name }}
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+      with:
+        mask-password: 'true'
+
+    - name: Build, tag, and push docker image to Amazon ECR
+      env:
+        REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        REPOSITORY: ${{ inputs.application-name }}
+        IMAGE_TAG: ${{ github.sha }}
+      run: |
+        docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
+        docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
