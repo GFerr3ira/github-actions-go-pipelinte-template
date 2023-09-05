@@ -18,6 +18,9 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - run: echo Starting the pipeline
+      shell: bash
+
     - name: Set up Go
       uses: actions/setup-go@v2
       with:
