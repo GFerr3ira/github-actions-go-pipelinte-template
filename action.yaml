@@ -7,6 +7,9 @@ inputs:
   aws-region:
     description: 'AWS region name to assume role'
     required: true
+  gh_access_token:
+    description: 'GH access token to clone ksutomize step'
+    required: true
   gitops-repo-name:
     description: 'GitOps repo name (K8S manifests repo)'
     required: true
@@ -63,7 +66,7 @@ runs:
       with:
         gitops-repo-name: ${{ inputs.gitops-repo-name }}
         gitops-repo-url: ${{ inputs.gitops-repo-url }}
-        gh_access_token: ${{secrets.GITHUB_TOKEN}}
+        gh_access_token: ${{ inputs.gh_access_token }}
         registry: ${{ steps.login-ecr.outputs.registry }}
         app_id: ${{ inputs.application-name }}
         github_actor: ${{ github.actor }}
