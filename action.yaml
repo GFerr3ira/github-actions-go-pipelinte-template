@@ -1,25 +1,28 @@
 name: 'Go lang pipeline'
 description: 'Go Lang Docker Build, AWS ECR Push and Kustomize step'
 inputs:
-  application-name:
-    description: 'The application name'
+  app-name:
+    description: 'The app name'
     required: true
   aws-region:
     description: 'AWS region name to assume role'
     required: true
-  gh_access_token:
-    description: 'GH access token to clone ksutomize step'
+  github-deploy-ssh-key:
+    description: 'The github deploy SSH key to clone K8S manifests'
     required: true
-  gitops-repo-name:
-    description: 'GitOps repo name (K8S manifests repo)'
-    required: true
-  gitops-repo-url:
-    description: 'GitOps repo URL'
+  github-token:
+    description: 'The github token to create PR'
     required: true
   go-version:
     description: 'Go lang version'
     required: true
     default: 1.16
+  k8s-manifest-repo-name:
+    description: 'The name of K8S manifests repository'
+    required: true
+  k8s-manifest-repo-ssh:
+    description: 'The SSH of K8S manifests repository'
+    required: true
   role-session-name:
     description: 'The AWS Session name'
     required: true
@@ -55,7 +58,7 @@ runs:
       shell: bash
       env:
         REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        REPOSITORY: ${{ inputs.application-name }}
+        REPOSITORY: ${{ inputs.app-name }}
         IMAGE_TAG: ${{ env.RELEASE_VERSION }}
       run: |
         docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
@@ -64,9 +67,10 @@ runs:
     - name: Kustomize step
       uses: GFerr3ira/github-actions-kustomize-argocd-manifests@master
       with:
-        gitops-repo-name: ${{ inputs.gitops-repo-name }}
-        gitops-repo-url: ${{ inputs.gitops-repo-url }}
-        gh_access_token: ${{ inputs.gh_access_token }}
-        registry: ${{ steps.login-ecr.outputs.registry }}
-        app_id: ${{ inputs.application-name }}
-        github_actor: ${{ github.actor }}
+        app-name: ${{ inputs.app-name }}
+        app-registry: ${{ steps.login-ecr.outputs.registry }}
+        github-actor: ${{ github.actor }}
+        github-deploy-ssh-key: '${{ inputs.github-deploy-ssh-key }}'
+        github-token: '${{ inputs.github-token }}'
+        k8s-manifest-repo-name: '${{ inputs.k8s-manifest-repo-name }}'
+        k8s-manifest-repo-ssh: '${{ inputs.k8s-manifest-repo-ssh }}'
