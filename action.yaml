@@ -34,7 +34,7 @@ runs:
   using: "composite"
   steps:
     - name: Get git repository informations
-      uses: GFerr3ira/github-actions-git-informations@master
+      uses: ferr3ira-gabriel/github-actions-git-informations@master
 
     - name: Set up Go
       uses: actions/setup-go@v2
@@ -65,7 +65,7 @@ runs:
         docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
 
     - name: Kustomize step
-      uses: GFerr3ira/github-actions-kustomize-argocd-manifests@master
+      uses: ferr3ira-gabriel/github-actions-kustomize-argocd-manifests@master
       with:
         app-name: ${{ inputs.app-name }}
         app-registry: ${{ steps.login-ecr.outputs.registry }}
